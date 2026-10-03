@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+
 
 export default function NewArbitrageBotPage() {
   const router = useRouter();
@@ -29,33 +29,33 @@ export default function NewArbitrageBotPage() {
   };
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Create Arbitrage Bot</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuration</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <div>
-              <Label>Bot Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="SOL-USDC Main Arb" required />
-            </div>
-            <div>
-              <Label>Min Profit (SOL)</Label>
-              <Input type="number" step="0.001" value={minProfit} onChange={(e) => setMinProfit(e.target.value)} required />
-            </div>
-            <div>
-              <Label>Capital Allocated (SOL)</Label>
-              <Input type="number" step="0.1" value={capital} onChange={(e) => setCapital(e.target.value)} required />
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create Bot'}</Button>
-              <Button type="button" variant="outline" onClick={() => router.push('/arbitrage')}>Cancel</Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="mx-auto max-w-2xl space-y-5">
+      <div className="rounded-xl border border-border-subtle bg-surface-subtle p-5 shadow-sm">
+        <h1 className="font-headline-lg text-headline-lg font-bold text-text-primary">Create Arbitrage Bot</h1>
+        <p className="text-sm text-text-secondary">Configure min profit, capital allocation, and DEX targets.</p>
+      </div>
+      <form onSubmit={submit} className="space-y-4 rounded-xl border border-border-subtle bg-surface-subtle p-5 shadow-sm">
+        <div className="space-y-1.5">
+          <Label className="font-label-caps text-label-caps text-text-secondary font-medium">Bot Name</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="SOL-USDC Main Arb" required className="border-border-subtle bg-white" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="font-label-caps text-label-caps text-text-secondary font-medium">Min Profit (SOL)</Label>
+          <Input type="number" step="0.001" value={minProfit} onChange={(e) => setMinProfit(e.target.value)} required className="border-border-subtle bg-white" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="font-label-caps text-label-caps text-text-secondary font-medium">Capital Allocated (SOL)</Label>
+          <Input type="number" step="0.1" value={capital} onChange={(e) => setCapital(e.target.value)} required className="border-border-subtle bg-white" />
+        </div>
+        <div className="flex gap-2 pt-2">
+          <Button type="submit" disabled={loading} className="bg-primary font-headline-sm text-sm font-semibold text-white hover:bg-primary/90">
+            {loading ? 'Creating...' : 'Create Bot'}
+          </Button>
+          <Button type="button" variant="outline" onClick={() => router.push('/arbitrage')} className="border-border-subtle bg-white font-headline-sm text-sm font-medium text-text-primary hover:bg-slate-50">
+            Cancel
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

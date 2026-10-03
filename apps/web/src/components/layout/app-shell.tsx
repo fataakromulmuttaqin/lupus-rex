@@ -10,11 +10,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (pathname === '/login') return <>{children}</>;
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-surface-base">
       <Sidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="pl-64">
         <Navbar />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="min-h-screen w-full p-4 pt-16 md:p-6 md:pt-20">{children}</main>
       </div>
     </div>
   );

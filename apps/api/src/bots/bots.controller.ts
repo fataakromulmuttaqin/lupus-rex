@@ -51,6 +51,12 @@ export class BotsController {
     return this.bots.updateStatus(id, 'stopped');
   }
 
+  @Get('trades/all')
+  async allTrades(@Headers('authorization') auth: string) {
+    const user = this.currentUser(auth);
+    return this.trades.findByUser(user.id);
+  }
+
   @Get(':id/trades')
   async getTrades(@Param('id') id: string) {
     return this.trades.findByBot(id);
