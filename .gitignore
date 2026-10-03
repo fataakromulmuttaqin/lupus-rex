@@ -1,0 +1,15 @@
+node_modules
+*.log
+dist
+.next
+.env
+.env.local
+coverage
+.DS_Store
+*.tsbuildinfo
+api-dev.log
+api-dev2.log
+api-final.log
+api-test.log
+lupus-rex-dev.log
+web-final.log
