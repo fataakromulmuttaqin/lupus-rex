@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  walletAddress String    @unique
+  email         String?
+  plan          String    @default("free")
+  createdAt     DateTime  @default(now())
+  lastActiveAt  DateTime? @updatedAt
+  wallets       Wallet[]
+  bots          Bot[]
+  trades        Trade[]
+  copySessions  CopySession[]
+  lpPositions   LpPosition[]
+  notifications Notification[]
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String
+  address   String
+  label     String?
+  type      String    @default("hot")
+  isPrimary Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Bot {
+  id               String   @id @default(uuid())
+  userId           String
+  name             String
+  type             String
+  status           String   @default("stopped")
+  config           String   // JSON string
+  capitalAllocated Decimal  @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades           Trade[]
+}
+
+model Trade {
+  id          String   @id @default(uuid())
+  botId       String?
+  userId      String
+  type        String
+  pair        String
+  txSignature String
+  profit      Decimal
+  volume      Decimal
+  gasUsed     BigInt
+  rawData     String?  // JSON string
+  executedAt  DateTime @default(now())
+  bot         Bot?     @relation(fields: [botId], references: [id], onDelete: SetNull)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CopySession {
+  id          String    @id @default(uuid())
+  userId      String
+  botId       String?
+  targetWallet String
+  allocation  Decimal
+  status      String    @default("active")
+  config      String    // JSON string
+  startedAt   DateTime  @default(now())
+  stoppedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LpPosition {
+  id          String    @id @default(uuid())
+  userId      String
+  botId       String?
+  poolAddress String
+  dex         String
+  lowerPrice  Decimal?
+  upperPrice  Decimal?
+  liquidity   Decimal?
+  feesEarned  Decimal   @default(0)
+  status      String    @default("active")
+  createdAt   DateTime  @default(now())
+  closedAt    DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

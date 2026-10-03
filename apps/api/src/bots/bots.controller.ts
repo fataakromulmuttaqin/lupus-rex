@@ -25,34 +25,34 @@ export class BotsController {
   }
 
   @Get()
-  findAll(@Headers('authorization') auth: string) {
+  async findAll(@Headers('authorization') auth: string) {
     const user = this.currentUser(auth);
     return this.bots.findByUser(user.id);
   }
 
   @Post()
-  create(@Headers('authorization') auth: string, @Body() dto: CreateBotDto) {
+  async create(@Headers('authorization') auth: string, @Body() dto: CreateBotDto) {
     const user = this.currentUser(auth);
     return this.bots.create(user.id, dto);
   }
 
   @Post(':id/start')
-  start(@Param('id') id: string) {
+  async start(@Param('id') id: string) {
     return this.bots.updateStatus(id, 'running');
   }
 
   @Post(':id/stop')
-  stop(@Param('id') id: string) {
+  async stop(@Param('id') id: string) {
     return this.bots.updateStatus(id, 'stopped');
   }
 
   @Post(':id/emergency-stop')
-  emergencyStop(@Param('id') id: string) {
+  async emergencyStop(@Param('id') id: string) {
     return this.bots.updateStatus(id, 'stopped');
   }
 
   @Get(':id/trades')
-  getTrades(@Param('id') id: string) {
+  async getTrades(@Param('id') id: string) {
     return this.trades.findByBot(id);
   }
 }

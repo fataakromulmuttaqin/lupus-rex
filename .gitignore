@@ -13,3 +13,6 @@ api-final.log
 api-test.log
 lupus-rex-dev.log
 web-final.log
+*.db
+*.db-journal
+apps/api/prisma/dev.db

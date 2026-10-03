@@ -1,46 +1,21 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
-
-export interface WalletContextValue {
-  connected: boolean;
-  publicKey: string | null;
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-}
-
-const WalletContext = createContext<WalletContextValue | undefined>(undefined);
+import { ReactNode } from 'react';
+import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [connected, setConnected] = useState(false);
-  const [publicKey, setPublicKey] = useState<string | null>(null);
-
-  const connect = async () => {
-    const mockKey = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
-    setPublicKey(mockKey);
-    setConnected(true);
-  };
-
-  const disconnect = () => {
-    setPublicKey(null);
-    setConnected(false);
-  };
-
-  const signMessage = async (message: Uint8Array) => {
-    // Simulated signature (base64 of the message for demo)
-    return new Uint8Array(message);
-  };
+  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || 'https://api.devnet.solana.com';
+  const wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
 
   return (
-    <WalletContext.Provider value={{ connected, publicKey, connect, disconnect, signMessage }}>
-      {children}
-    </WalletContext.Provider>
+    <ConnectionProvider endpoint={endpoint}>
+      <SolanaWalletProvider wallets={wallets} autoConnect>
+        <WalletModalProvider>{children}</WalletModalProvider>
+      </SolanaWalletProvider>
+    </ConnectionProvider>
   );
-}
-
-export function useWallet() {
-  const ctx = useContext(WalletContext);
-  if (!ctx) throw new Error('useWallet must be used inside WalletProvider');
-  return ctx;
 }

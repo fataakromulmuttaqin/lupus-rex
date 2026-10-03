@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 import { ExecutionService } from '../execution/execution.service';
 
 export type BotType = 'arbitrage' | 'copy' | 'lp';
 export type BotStatus = 'running' | 'paused' | 'stopped' | 'error';
+
+export interface BotConfig {
+  minProfitLamports?: number;
+  dexes?: string[];
+  tickIntervalMs?: number;
+  [key: string]: any;
+}
 
 export interface Bot {
   id: string;
@@ -19,40 +27,38 @@ export interface Bot {
 
 @Injectable()
 export class BotsService {
-  private bots: Bot[] = [];
+  constructor(private readonly prisma: PrismaService, private readonly execution: ExecutionService) {}
 
-  constructor(private readonly execution: ExecutionService) {}
-
-  create(userId: string, data: Partial<Bot>) {
-    const now = new Date().toISOString();
-    const bot: Bot = {
-      id: randomUUID(),
-      userId,
-      name: data.name || 'Untitled Bot',
-      type: data.type || 'arbitrage',
-      status: 'stopped',
-      config: data.config || {},
-      capitalAllocated: data.capitalAllocated || 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.bots.push(bot);
-    return bot;
+  async create(userId: string, data: Partial<Bot>) {
+    const config = typeof data.config === 'object' && data.config !== null ? data.config : {};
+    return this.prisma.bot.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        name: data.name || 'Untitled Bot',
+        type: data.type || 'arbitrage',
+        status: 'stopped',
+        config: JSON.stringify(config),
+        capitalAllocated: data.capitalAllocated || 0,
+      },
+    });
   }
 
-  findByUser(userId: string) {
-    return this.bots.filter((b) => b.userId === userId);
+  async findByUser(userId: string) {
+    const bots = await this.prisma.bot.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    return bots.map((b) => this.serializeBot(b));
   }
 
-  findOne(id: string) {
-    return this.bots.find((b) => b.id === id);
+  async findOne(id: string) {
+    const bot = await this.prisma.bot.findUnique({ where: { id } });
+    return bot ? this.serializeBot(bot) : null;
   }
 
-  updateStatus(id: string, status: BotStatus) {
-    const bot = this.bots.find((b) => b.id === id);
-    if (!bot) return null;
-    bot.status = status;
-    bot.updatedAt = new Date().toISOString();
+  async updateStatus(id: string, status: BotStatus) {
+    const bot = await this.prisma.bot.update({
+      where: { id },
+      data: { status },
+    });
 
     if (status === 'running') {
       this.execution.start(bot);
@@ -60,6 +66,15 @@ export class BotsService {
       this.execution.stop(bot.id);
     }
 
-    return bot;
+    return this.serializeBot(bot);
+  }
+
+  private serializeBot(bot: any) {
+    return { ...bot, capitalAllocated: Number(bot.capitalAllocated), config: this.safeJson(bot.config, {}) };
+  }
+
+  private safeJson(value: string | null | undefined, fallback: any) {
+    if (!value) return fallback;
+    try { return JSON.parse(value); } catch { return fallback; }
   }
 }
